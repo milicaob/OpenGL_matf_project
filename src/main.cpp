@@ -174,8 +174,14 @@ int main() {
 
     // load models
     // -----------
-    Model ourModel("resources/objects/backpack/backpack.obj");
-    ourModel.SetShaderTextureNamePrefix("material.");
+
+
+    //load house model
+    Model houseModel("/home/milan/OpenGL_matf_project/resources/objects/house/highpoly_town_house_01.obj");
+    houseModel.SetShaderTextureNamePrefix("material.");
+
+
+
 
     //directional light
     DirLight& dirLight = programState->dirLight;
@@ -229,6 +235,7 @@ int main() {
 
         //point light
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
+
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
         ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
@@ -238,20 +245,25 @@ int main() {
         ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
         ourShader.setVec3("viewPosition", programState->camera.Position);
         ourShader.setFloat("material.shininess", 32.0f);
-        // view/projection transformations
+
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
                                                 (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
+
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
-        // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model,
-                               programState->backpackPosition); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
-        ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
+
+        glm::mat4 wModel = glm::mat4(1.0f);
+
+        //wModel = glm::scale(wModel, glm::vec3(0.1f, 0.1f, 0.1f));
+
+        wModel = glm::translate(wModel,
+                                glm::vec3(0.0f, -15.0f, 0.0f));
+
+        ourShader.setMat4("model", wModel);
+        houseModel.Draw(ourShader);
+
 
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
