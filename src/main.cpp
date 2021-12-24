@@ -29,8 +29,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 unsigned int loadCubemap(vector<std::string> faces);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 1200;
 
 // camera
 
@@ -66,8 +66,10 @@ struct ProgramState {
     bool ImGuiEnabled = false;
     Camera camera;
     bool CameraMouseMovementUpdateEnabled = true;
-    glm::vec3 backpackPosition = glm::vec3(0.0f);
-    float backpackScale = 1.0f;
+    glm::vec3 housePosition = glm::vec3(0.0f);
+    float houseScale = 1.0f;
+    float snowScale = 1.0f;
+    glm::vec3 snowPosition = glm::vec3(0.0f);
     PointLight pointLight;
     DirLight dirLight;
     ProgramState()
@@ -89,7 +91,15 @@ void ProgramState::SaveToFile(std::string filename) {
         << camera.Position.z << '\n'
         << camera.Front.x << '\n'
         << camera.Front.y << '\n'
-        << camera.Front.z << '\n';
+        << camera.Front.z << '\n'
+        << houseScale << '\n'
+        << housePosition.x << '\n'
+        << housePosition.y << '\n'
+        << housePosition.z << '\n'
+        << snowScale << '\n'
+        << snowPosition.x << '\n'
+        << snowPosition.y << '\n'
+        << snowPosition.z << '\n';
 }
 
 void ProgramState::LoadFromFile(std::string filename) {
@@ -104,7 +114,15 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> camera.Position.z
            >> camera.Front.x
            >> camera.Front.y
-           >> camera.Front.z;
+           >> camera.Front.z
+           >> houseScale
+           >> housePosition.x
+           >> housePosition.y
+           >> housePosition.z
+           >> snowScale
+           >> snowPosition.x
+           >> snowPosition.y
+           >> snowPosition.z;
     }
 }
 
@@ -179,8 +197,12 @@ int main() {
 
 
     //load house model
-    Model houseModel("/home/milan/OpenGL_matf_project/resources/objects/house/highpoly_town_house_01.obj");
+    Model houseModel("resources/objects/house/highpoly_town_house_01.obj");
     houseModel.SetShaderTextureNamePrefix("material.");
+
+    //load snow model
+    Model snowModel("resources/objects/snow model/terrain.obj");
+    snowModel.SetShaderTextureNamePrefix("material.");
 
 
 
@@ -347,7 +369,6 @@ int main() {
 
         //point light
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
-
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
         ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
@@ -361,16 +382,21 @@ int main() {
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
+        //transforming models
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, programState->housePosition);
+        model = glm::scale(model, glm::vec3(programState->houseScale));
 
-        glm::mat4 wModel = glm::mat4(1.0f);
-
-        //wModel = glm::scale(wModel, glm::vec3(0.1f, 0.1f, 0.1f));
-
-        wModel = glm::translate(wModel,
-                                glm::vec3(0.0f, -15.0f, 0.0f));
-
-        ourShader.setMat4("model", wModel);
+        ourShader.setMat4("model", model);
         houseModel.Draw(ourShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, programState->snowPosition);
+        model = glm::scale(model, glm::vec3(programState->snowScale));
+
+        ourShader.setMat4("model", model);
+        snowModel.Draw(ourShader);
+
 
 
         if (programState->ImGuiEnabled)
@@ -452,12 +478,14 @@ void DrawImGui(ProgramState *programState) {
 
     {
         static float f = 0.0f;
-        ImGui::Begin("Hello window");
-        ImGui::Text("Hello text");
+        ImGui::Begin("Hello!");
+        //ImGui::Text("Hello text");
         ImGui::SliderFloat("Float slider", &f, 0.0, 1.0);
-        ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
-        ImGui::DragFloat3("Backpack position", (float*)&programState->backpackPosition);
-        ImGui::DragFloat("Backpack scale", &programState->backpackScale, 0.05, 0.1, 4.0);
+        //ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
+        ImGui::DragFloat3("House position", (float*)&programState->housePosition);
+        ImGui::DragFloat("House scale", &programState->houseScale, 0.05, 0.1, 4.0);
+        ImGui::DragFloat3("Snow position", (float*)&programState->snowPosition);
+        ImGui::DragFloat("Snow scale", &programState->snowScale, 0.05, 0.1, 4.0);
 
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
@@ -490,6 +518,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         }
     }
 }
+
+
 
 
 
