@@ -30,6 +30,7 @@ struct DirLight {
     vec3 specular;
 };
 
+//uniform sampler2D floorTexture;
 uniform PointLight pointLight;
 uniform Material material;
 uniform DirLight dirLight;
@@ -41,11 +42,18 @@ vec3 CalculateDirectLight(DirLight light, vec3 normal, vec3 viewDir, vec3 FragPo
 
 void main()
 {
+    //vec3 color = texture(floorTexture, material.texture_diffuse1).rgb;
+    //vec3 ambient = 0.05 * color;
     vec3 normal = normalize(Normal);
     vec3 viewDir = normalize(viewPosition - FragPos);
+    //float diff = max(dot(lightDir, normal), 0.0);
+    //vec3 diffuse = diff * color;
 
     vec3 result = CalculateDirectLight(dirLight, normal, viewDir, FragPos);
     result += CalculatePointLight(pointLight, normal, FragPos, viewDir);
+    //result += color;
+    //result += ambient;
+    //result += diffuse;
 
 
     FragColor = vec4(result, 1.0);
