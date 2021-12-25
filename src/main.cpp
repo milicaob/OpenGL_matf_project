@@ -213,41 +213,6 @@ int main() {
     //skybox vertices/cubemapping
     Shader skyShader("resources/shaders/skyShader.vs", "resources/shaders/skyShader.fs");
 
-    float planeVertices[] = {
-            // positions            // normals         // texcoords
-            10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
-            -10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-            -10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
-
-            10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
-            -10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
-            10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
-    };
-
-    unsigned int planeVAO, planeVBO;
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glBindVertexArray(0);
-
-    unsigned int planeTexture = loadTexture("resources/textures/Snow1Albedo.png");
-    ourShader.use();
-    ourShader.setInt("material.texture_diffuse1", 0);
-
-
-
-
-
-
-
     float skyboxVertices[] = {
             // positions
             -1.0f,  1.0f, -1.0f,
@@ -322,14 +287,49 @@ int main() {
 
 
 
+    //
+    float planeVertices[] = {
+            // positions            // normals         // texcoords
+            10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+            -10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+            -10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
+
+            10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+            -10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
+            10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
+    };
+
+    unsigned int planeVAO, planeVBO;
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glBindVertexArray(0);
+
+    unsigned int planeTexture = loadTexture("resources/textures/Snow1Albedo.png");
+    ourShader.use();
+    ourShader.setInt("material.texture_diffuse1", 0);
+
+
+
+
 
 
     //directional light
     DirLight& dirLight = programState->dirLight;
     dirLight.direction = glm::vec3(0.0, -5.0, 0.0);
     dirLight.ambient = glm::vec3(0.05, 0.05, 0.05);
-    dirLight.diffuse = glm::vec3(0.4, 0.4, 0.4);
-    dirLight.specular = glm::vec3(0.4, 0.4, 0.4);
+    //dirLight.diffuse = glm::vec3(0.4, 0.4, 0.4);
+    //dirLight.specular = glm::vec3(0.4, 0.4, 0.4);
+    dirLight.diffuse = glm::vec3(0.1, 0.1, 0.1);
+    dirLight.specular = glm::vec3(0.1, 0.1, 0.1);
 
     //point light
     PointLight& pointLight = programState->pointLight;
@@ -409,9 +409,9 @@ int main() {
         //point light
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         ourShader.setVec3("pointLight.position", pointLight.position);
-        ourShader.setVec3("pointLight.ambient", pointLight.ambient);
-        ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
-        ourShader.setVec3("pointLight.specular", pointLight.specular);
+        ourShader.setVec3("pointLight.ambient", glm::vec3(1.0f, 0.45f, 0.0f));
+        ourShader.setVec3("pointLight.diffuse", glm::vec3(1.0f, 0.45f, 0.3f));
+        ourShader.setVec3("pointLight.specular", glm::vec3(1.0f, 0.45f, 0.4f));
         ourShader.setFloat("pointLight.constant", pointLight.constant);
         ourShader.setFloat("pointLight.linear", pointLight.linear);
         ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
@@ -429,6 +429,8 @@ int main() {
         ourShader.setMat4("model", model);
         houseModel.Draw(ourShader);
 
+
+        //snow pile rendering
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->snowPosition);
         model = glm::scale(model, glm::vec3(programState->snowScale));
@@ -439,7 +441,8 @@ int main() {
 
         //plane rendering
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(4.0f, 0.535f, 0.0f));
+        model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
+        model = glm::translate(model, glm::vec3(4.0f, 0.505f, 0.0f));
         ourShader.setMat4("model", model);
 
         glBindVertexArray(planeVAO);

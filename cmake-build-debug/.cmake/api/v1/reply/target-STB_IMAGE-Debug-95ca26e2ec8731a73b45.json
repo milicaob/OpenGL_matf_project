@@ -62,11 +62,11 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "/home/milica/OpenGL_matf_project/cmake-build-debug/configuration"
+					"path" : "/home/milan/OpenGL_matf_project/cmake-build-debug/configuration"
 				},
 				{
 					"backtrace" : 3,
-					"path" : "/home/milica/OpenGL_matf_project/include"
+					"path" : "/home/milan/OpenGL_matf_project/include"
 				}
 			],
 			"language" : "CXX",

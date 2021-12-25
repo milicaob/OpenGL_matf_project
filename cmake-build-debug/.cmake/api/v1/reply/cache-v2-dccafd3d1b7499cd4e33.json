@@ -79,7 +79,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/milica/OpenGL_matf_project/cmake-build-debug"
+			"value" : "/home/milan/OpenGL_matf_project/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -151,7 +151,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : "-j8"
+			"value" : "-j16"
 		},
 		{
 			"name" : "CMAKE_COLOR_MAKEFILE",
@@ -703,7 +703,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/milica/OpenGL_matf_project"
+			"value" : "/home/milan/OpenGL_matf_project"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1459,7 +1459,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/milica/OpenGL_matf_project/cmake-build-debug"
+			"value" : "/home/milan/OpenGL_matf_project/cmake-build-debug"
 		},
 		{
 			"name" : "project_base_IS_TOP_LEVEL",
@@ -1483,7 +1483,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/milica/OpenGL_matf_project"
+			"value" : "/home/milan/OpenGL_matf_project"
 		}
 	],
 	"kind" : "cache",

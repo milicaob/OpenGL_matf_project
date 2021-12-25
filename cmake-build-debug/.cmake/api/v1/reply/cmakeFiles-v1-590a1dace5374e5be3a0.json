@@ -778,8 +778,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/home/milica/OpenGL_matf_project/cmake-build-debug",
-		"source" : "/home/milica/OpenGL_matf_project"
+		"build" : "/home/milan/OpenGL_matf_project/cmake-build-debug",
+		"source" : "/home/milan/OpenGL_matf_project"
 	},
 	"version" : 
 	{

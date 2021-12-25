@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "/home/milica/OpenGL_matf_project/project_base"
+			"path" : "/home/milan/OpenGL_matf_project/project_base"
 		}
 	],
 	"backtrace" : 1,
@@ -72,19 +72,19 @@
 			[
 				{
 					"backtrace" : 3,
-					"path" : "/home/milica/OpenGL_matf_project/cmake-build-debug/configuration"
+					"path" : "/home/milan/OpenGL_matf_project/cmake-build-debug/configuration"
 				},
 				{
 					"backtrace" : 4,
-					"path" : "/home/milica/OpenGL_matf_project/include"
+					"path" : "/home/milan/OpenGL_matf_project/include"
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/milica/OpenGL_matf_project/libs/glad/include"
+					"path" : "/home/milan/OpenGL_matf_project/libs/glad/include"
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/milica/OpenGL_matf_project/libs/imgui/include"
+					"path" : "/home/milan/OpenGL_matf_project/libs/imgui/include"
 				}
 			],
 			"language" : "CXX",
