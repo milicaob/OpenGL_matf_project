@@ -73,6 +73,9 @@ struct ProgramState {
     float houseScale = 1.0f;
     float snowScale = 1.0f;
     glm::vec3 snowPosition = glm::vec3(0.0f);
+    float mountainScale = 1.0f;
+    glm::vec3 mountainPosition = glm::vec3(0.0f);
+
     PointLight pointLight;
     DirLight dirLight;
     ProgramState()
@@ -102,7 +105,11 @@ void ProgramState::SaveToFile(std::string filename) {
         << snowScale << '\n'
         << snowPosition.x << '\n'
         << snowPosition.y << '\n'
-        << snowPosition.z << '\n';
+        << snowPosition.z << '\n'
+        << mountainScale << '\n'
+        << mountainPosition.x << '\n'
+        << mountainPosition.y << '\n'
+        << mountainPosition.z << '\n';
 }
 
 void ProgramState::LoadFromFile(std::string filename) {
@@ -125,7 +132,11 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> snowScale
            >> snowPosition.x
            >> snowPosition.y
-           >> snowPosition.z;
+           >> snowPosition.z
+           >> mountainScale
+           >> mountainPosition.x
+           >> mountainPosition.y
+           >> mountainPosition.z;
     }
 }
 
@@ -206,6 +217,9 @@ int main() {
     //load snow model
     Model snowModel("resources/objects/snow model/terrain.obj");
     snowModel.SetShaderTextureNamePrefix("material.");
+
+    Model modelMountain("resources/objects/great_mountain/untitled.obj");
+    modelMountain.SetShaderTextureNamePrefix("material.");
 
 
 
@@ -439,11 +453,22 @@ int main() {
         snowModel.Draw(ourShader);
 
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, programState->mountainPosition);
+        model = glm::scale(model, glm::vec3(0.05, 0.05, 0.05));
+
+        ourShader.setMat4("model", model);
+        modelMountain.Draw(ourShader);
+
+
         //plane rendering
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
         model = glm::translate(model, glm::vec3(4.0f, 0.505f, 0.0f));
         ourShader.setMat4("model", model);
+
+
+
 
         glBindVertexArray(planeVAO);
         glActiveTexture(GL_TEXTURE0);
@@ -538,6 +563,8 @@ void DrawImGui(ProgramState *programState) {
         ImGui::DragFloat("House scale", &programState->houseScale, 0.05, 0.1, 4.0);
         ImGui::DragFloat3("Snow position", (float*)&programState->snowPosition);
         ImGui::DragFloat("Snow scale", &programState->snowScale, 0.05, 0.1, 4.0);
+        ImGui::DragFloat3("Mountain position", (float*)&programState->mountainPosition);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.05, 0.1, 4.0);
 
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);

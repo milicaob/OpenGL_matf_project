@@ -1,7 +1,8 @@
 CMakeFiles/STB_IMAGE.dir/libs/stb_image.cpp.o: \
- /home/milan/OpenGL_matf_project/libs/stb_image.cpp \
+ /home/milica/OpenGL_matf_project/libs/stb_image.cpp \
  /usr/include/stdc-predef.h \
- /home/milan/OpenGL_matf_project/include/stb_image.h /usr/include/stdio.h \
+ /home/milica/OpenGL_matf_project/include/stb_image.h \
+ /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
