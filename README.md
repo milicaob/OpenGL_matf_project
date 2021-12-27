@@ -1,4 +1,14 @@
 
+---------------------
+#Komande
+
+`F1` - on/off imgui
+
+`G`  - on/off grayscale
+
+<br>
+
+---------------------
 # Uputstvo
 1. Main se nalazi u src/main.cpp
 2. Cpp fajlovi idu u src folder
