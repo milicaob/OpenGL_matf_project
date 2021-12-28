@@ -1,10 +1,14 @@
 
 ---------------------
-#Komande
+# Komande
 
 `F1` - on/off imgui
 
 `G`  - on/off grayscale
+
+`Q`  - lower heightScale for parallax mapping
+
+`E`  - increase heightScale for parallax mapping
 
 <br>
 
