@@ -35,8 +35,11 @@ unsigned int loadTexture(const char *path);
 void renderQuad();
 
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+bool hdr = true;
+bool hdrKeyPressed = false;
+float exposure = 1.0f;
 
 //grayscale effect
 bool grayEffect = false;
@@ -219,6 +222,7 @@ int main() {
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader antiAliasingShader("resources/shaders/antial.vs","resources/shaders/antial.fs");
+    Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
 
     // load models
     // -----------
@@ -234,8 +238,6 @@ int main() {
 
     Model modelMountain("resources/objects/great_mountain/untitled.obj");
     modelMountain.SetShaderTextureNamePrefix("material.");
-
-
 
 
     //skybox vertices/cubemapping
@@ -369,18 +371,30 @@ int main() {
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
 
+
+    //stone wall shader and tex
+    Shader brickShader("resources/shaders/normalShader.vs", "resources/shaders/normalShader.fs");
+
+    unsigned int brickTextureDiff = loadTexture(FileSystem::getPath("resources/textures/brickWallDiff.jpg").c_str());
+    //unsigned int brickTextureSpec = loadTexture(FileSystem::getPath("resources/textures/brickWallSpec.jpg").c_str());
+    unsigned int brickTextureNormal = loadTexture(FileSystem::getPath("resources/textures/brickWallNormal.jpg").c_str());
+    unsigned int brickTextureDisp = loadTexture(FileSystem::getPath("resources/textures/brickWallDisp.jpg").c_str());
+
+    brickShader.use();
+    brickShader.setInt("diffuseMap", 0);
+    brickShader.setInt("normalMap", 1);
+    brickShader.setInt("depthMap", 2);
+    //brickShader.setInt("specularMap", 3);
+
+
+    //screen vertices
     float quadVertices[] = {
-            // positions   // texCoords
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            -1.0f, -1.0f,  0.0f, 0.0f,
-            1.0f, -1.0f,  1.0f, 0.0f,
-
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            1.0f, -1.0f,  1.0f, 0.0f,
-            1.0f,  1.0f,  1.0f, 1.0f
+            // positions        // texture Coords
+            -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
     };
-
-    //setup for the VAO for aa
     unsigned int quadVAO, quadVBO;
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
@@ -388,14 +402,18 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+
+
+
+
 
     //MSAA
-    unsigned int framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    unsigned int msFBO;
+    glGenFramebuffers(1, &msFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
 
     unsigned int textureColorBufferMultiSampled;
     glGenTextures(1, &textureColorBufferMultiSampled);
@@ -419,34 +437,34 @@ int main() {
 
 
 
+    //hdr
+    unsigned int hdrFBO;
+    glGenFramebuffers(1, &hdrFBO);
+    unsigned int colorBuffer;
+    glGenTextures(1, &colorBuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // renderbuffer
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    antiAliasingShader.use();
     antiAliasingShader.setInt("screenTex", 0);
 
-
-
-
-
-    //stone wall shader and tex
-    Shader brickShader("resources/shaders/normalShader.vs", "resources/shaders/normalShader.fs");
-
-    unsigned int brickTextureDiff = loadTexture(FileSystem::getPath("resources/textures/brickWallDiff.jpg").c_str());
-    //unsigned int brickTextureSpec = loadTexture(FileSystem::getPath("resources/textures/brickWallSpec.jpg").c_str());
-    unsigned int brickTextureNormal = loadTexture(FileSystem::getPath("resources/textures/brickWallNormal.jpg").c_str());
-    unsigned int brickTextureDisp = loadTexture(FileSystem::getPath("resources/textures/brickWallDisp.jpg").c_str());
-
-    brickShader.use();
-    brickShader.setInt("diffuseMap", 0);
-    brickShader.setInt("normalMap", 1);
-    brickShader.setInt("depthMap", 2);
-    //brickShader.setInt("specularMap", 3);
-
-
-
-
-
-
-
-
-
+    hdrShader.use();
+    hdrShader.setInt("hdrBuffer", 0);
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -470,10 +488,13 @@ int main() {
         glClearColor(0.1,0.1,0.1, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        /*glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
         glClearColor(0.1,0.1,0.1, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);*/
 
 
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
@@ -641,18 +662,32 @@ int main() {
 
 
 
-        //antialiasing and grayscaling
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClearColor(1.0,1.0,1.0,1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDisable(GL_DEPTH_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        hdrShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, colorBuffer);
+        hdrShader.setInt("hdr", hdr);
+        hdrShader.setFloat("exposure", exposure);
+
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         antiAliasingShader.use();
         antiAliasingShader.setInt("grayEffect", grayEffect);
-        glBindVertexArray(quadVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
 
 
         if (programState->ImGuiEnabled)
@@ -709,6 +744,28 @@ void processInput(GLFWwindow *window) {
         else
             heightScale = 1.0f;
     }
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !hdrKeyPressed)
+    {
+        hdr = !hdr;
+        hdrKeyPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+    {
+        hdrKeyPressed = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+    {
+        if (exposure > 0.0f)
+            exposure -= 0.001f;
+        else
+            exposure = 0.0f;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+    {
+        exposure += 0.001f;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -751,10 +808,9 @@ void DrawImGui(ProgramState *programState) {
 
 
     {
-        static float f = 0.0f;
         ImGui::Begin("Hello!");
         //ImGui::Text("Hello text");
-        ImGui::SliderFloat("Float slider", &f, 0.0, 1.0);
+        ImGui::SliderFloat("Exposure", &exposure, 0.0, 2.0);
         //ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
         ImGui::DragFloat3("House position", (float*)&programState->housePosition);
         ImGui::DragFloat("House scale", &programState->houseScale, 0.05, 0.1, 4.0);

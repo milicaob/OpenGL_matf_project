@@ -7,7 +7,7 @@ uniform sampler2DMS screenTex;
 
 void main()
 {
-    ivec2 viewPortDim = ivec2(1920, 1080);
+    ivec2 viewPortDim = ivec2(1280, 720);
     ivec2 coord = ivec2(viewPortDim*TexCoords);
 
 
