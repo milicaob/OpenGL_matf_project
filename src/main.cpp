@@ -218,6 +218,9 @@ int main() {
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
 
     //enable frag blending and setup blending function:
     glEnable(GL_BLEND);
@@ -626,6 +629,7 @@ int main() {
 
 
         //plane rendering
+        glDisable(GL_CULL_FACE);
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
         model = glm::translate(model, glm::vec3(4.0f, 0.505f, 0.0f));
@@ -634,6 +638,7 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, planeTexture);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        glEnable(GL_CULL_FACE);
 
 
 
@@ -755,7 +760,8 @@ int main() {
                       float d2 = glm::distance(b, cameraPosition);
                       return d1 > d2;
                   });*/
-
+        //this goes before window implementation
+        glDisable(GL_CULL_FACE);
         windowShader.use();
         glBindVertexArray(windowVAO);
         glActiveTexture(GL_TEXTURE0);
@@ -779,6 +785,8 @@ int main() {
         windowShader.setMat4("model", model);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        //this goes after window implementation
+        glEnable(GL_CULL_FACE);
 
 
 

@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DIMGUI_IMPL_OPENGL_LOADER_GLAD
 
-CXX_INCLUDES = -I/home/milan/OpenGL_matf_project/cmake-build-debug/configuration -I/home/milan/OpenGL_matf_project/include -I/home/milan/OpenGL_matf_project/libs/glad/include -I/home/milan/OpenGL_matf_project/libs/imgui/include
+CXX_INCLUDES = -I/home/milica/OpenGL_matf_project/cmake-build-debug/configuration -I/home/milica/OpenGL_matf_project/include -I/home/milica/OpenGL_matf_project/libs/glad/include -I/home/milica/OpenGL_matf_project/libs/imgui/include
 
 CXX_FLAGS = -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -O3 -g -std=gnu++14
 
