@@ -15,6 +15,7 @@
 #include <learnopengl/model.h>
 
 #include <iostream>
+#include <vector>
 
 unsigned int loadTexture(const char *path);
 
@@ -218,6 +219,10 @@ int main() {
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
+    //enable frag blending and setup blending function:
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // build and compile shaders
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
@@ -232,12 +237,20 @@ int main() {
     Model houseModel("resources/objects/house/highpoly_town_house_01.obj");
     houseModel.SetShaderTextureNamePrefix("material.");
 
+
     //load snow model
     Model snowModel("resources/objects/snow model/terrain.obj");
     snowModel.SetShaderTextureNamePrefix("material.");
 
+
+    //load mt model
     Model modelMountain("resources/objects/great_mountain/untitled.obj");
     modelMountain.SetShaderTextureNamePrefix("material.");
+
+
+    //load bell model
+    Shader reflectShader("resources/shaders/reflectShader.vs", "resources/shaders/reflectShader.fs");
+    Model bellModel("resources/objects/bell/bell.obj");
 
 
     //skybox vertices/cubemapping
@@ -370,6 +383,40 @@ int main() {
     pointLight.constant = 1.0f;
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
+
+
+
+    //transparent window vertices
+    Shader windowShader("resources/shaders/transparentShader.vs", "resources/shaders/transparentShader.fs");
+    float windowVertices[] = {
+            4.0f, -0.4f,  4.0f,  1.0f, 0.0f,
+            -4.0f, -0.4f,  4.0f,  0.0f, 0.0f,
+            -4.0f, -0.4f, -4.0f,  0.0f, 1.0f,
+
+            4.0f, -0.4f,  4.0f,  1.0f, 0.0f,
+            -4.0f, -0.4f, -4.0f,  0.0f, 1.0f,
+            4.0f, -0.4f, -4.0f,  1.0f, 1.0f
+    };
+
+    unsigned int windowVAO, windowVBO;
+    glGenVertexArrays(1, &windowVAO);
+    glGenBuffers(1, &windowVBO);
+    glBindVertexArray(windowVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(windowVertices), windowVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
+
+
+    unsigned int windowTexture = loadTexture(FileSystem::getPath("resources/textures/window.png").c_str());
+
+    windowShader.use();
+    windowShader.setInt("diffTex", 0);
+
+
 
 
     //stone wall shader and tex
@@ -540,8 +587,8 @@ int main() {
         //point light
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         ourShader.setVec3("pointLight.position", pointLight.position);
-        ourShader.setVec3("pointLight.ambient", glm::vec3(1.0f, 0.45f, 0.0f));
-        ourShader.setVec3("pointLight.diffuse", glm::vec3(1.0f, 0.45f, 0.3f));
+        ourShader.setVec3("pointLight.ambient", glm::vec3(0.65f, 0.25f, 0.0f));
+        ourShader.setVec3("pointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
         ourShader.setVec3("pointLight.specular", glm::vec3(1.0f, 0.45f, 0.4f));
         ourShader.setFloat("pointLight.constant", pointLight.constant);
         ourShader.setFloat("pointLight.linear", pointLight.linear);
@@ -588,6 +635,28 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, planeTexture);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
+
+
+        //bell rendering (reflective surface)
+        reflectShader.use();
+
+        reflectShader.setMat4("projection", projection);
+        reflectShader.setMat4("view", view);
+
+        ourShader.setVec3("cameraPos", programState->camera.Position);
+
+        model = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(4.85f, 4.5f, -2.55f));
+        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f));
+
+        reflectShader.setMat4("model", model);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+        bellModel.Draw(reflectShader);
 
 
 
@@ -661,7 +730,59 @@ int main() {
 
 
 
+        //transparent objects render last
+        //windows rendering
 
+        /*
+        //glm::vec3 positions1 = glm::vec3(-1.25f,1.75f,-3.25f);
+        //glm::vec3 positions2 = glm::vec3(0.03f,2.87f,13.91f));
+
+        vector<glm::vec3> positions;
+        positions.push_back(glm::vec3(-1.25f,1.75f,-3.25f));
+        positions.push_back(glm::vec3(0.03f,2.87f,13.91f));
+
+        std::sort(positions.begin(), positions.end(), [](glm::vec3 a, glm::vec3 b){
+                float d1 = glm::distance(a, programState->camera.Position);
+                float d2 = glm::distance(b, programState->camera.Position);
+                return d1 > d2;
+        });
+
+
+        //sorting transparent windows so that both may be visible through other
+        std::sort(windows.begin(), windows.end(),
+                  [cameraPosition = programState->camera.Position](const glm::vec3& a, const glm::vec3& b) {
+                      float d1 = glm::distance(a, cameraPosition);
+                      float d2 = glm::distance(b, cameraPosition);
+                      return d1 > d2;
+                  });*/
+
+        windowShader.use();
+        glBindVertexArray(windowVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, windowTexture);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-1.25f,1.75f,-3.25f));
+
+        model = glm::scale(model, glm::vec3(0.39f,0.45f,0.4f));
+        model = glm::rotate(model, glm::radians(43.0f), glm::vec3(1.0, 0, 0));
+
+        windowShader.setMat4("model", model);
+        windowShader.setMat4("view", view);
+        windowShader.setMat4("projection", projection);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        model = glm::rotate(model, glm::radians(-43.0f), glm::vec3(1.0, 0, 0));
+        model = glm::translate(model, glm::vec3(0.03f,2.87f,13.91f));
+        model = glm::rotate(model, glm::radians(43.0f), glm::vec3(1.0, 0, 0));
+        windowShader.setMat4("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+
+        //POST PROCESSING
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -719,13 +840,13 @@ void processInput(GLFWwindow *window) {
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        programState->camera.ProcessKeyboard(FORWARD, deltaTime);
+        programState->camera.ProcessKeyboard(FORWARD, deltaTime * 2);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        programState->camera.ProcessKeyboard(BACKWARD, deltaTime);
+        programState->camera.ProcessKeyboard(BACKWARD, deltaTime * 2);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        programState->camera.ProcessKeyboard(LEFT, deltaTime);
+        programState->camera.ProcessKeyboard(LEFT, deltaTime * 2);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        programState->camera.ProcessKeyboard(RIGHT, deltaTime);
+        programState->camera.ProcessKeyboard(RIGHT, deltaTime * 2);
 
 
 
