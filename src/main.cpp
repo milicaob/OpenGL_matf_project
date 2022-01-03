@@ -18,29 +18,24 @@
 #include <vector>
 
 unsigned int loadTexture(const char *path);
-
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
-
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-
 void processInput(GLFWwindow *window);
-
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
-
 unsigned int loadCubemap(vector<std::string> faces);
-
 unsigned int loadTexture(const char *path);
-
 void renderQuad();
+
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 bool hdr = true;
 bool hdrKeyPressed = false;
-float exposure = 1.0f;
+
+bool bloom = true;
+bool bloomKeyPressed = false;
 
 //grayscale effect
 bool grayEffect = false;
@@ -91,7 +86,12 @@ struct ProgramState {
     float snowScale = 1.0f;
     glm::vec3 snowPosition = glm::vec3(0.0f);
     float mountainScale = 1.0f;
+    float mountainScale2 = 1.0f;
+    float mountainScale3 = 1.0f;
     glm::vec3 mountainPosition = glm::vec3(0.0f);
+    glm::vec3 mountainPosition2 = glm::vec3(0.0f);
+    glm::vec3 mountainPosition3 = glm::vec3(0.0f);
+    float exposure = 1.0f;
 
     PointLight pointLight;
     DirLight dirLight;
@@ -124,9 +124,18 @@ void ProgramState::SaveToFile(std::string filename) {
         << snowPosition.y << '\n'
         << snowPosition.z << '\n'
         << mountainScale << '\n'
+        << mountainScale2 << '\n'
+        << mountainScale3 << '\n'
         << mountainPosition.x << '\n'
         << mountainPosition.y << '\n'
-        << mountainPosition.z << '\n';
+        << mountainPosition.z << '\n'
+        << mountainPosition2.x << '\n'
+        << mountainPosition2.y << '\n'
+        << mountainPosition2.z << '\n'
+        << mountainPosition3.x << '\n'
+        << mountainPosition3.y << '\n'
+        << mountainPosition3.z << '\n'
+        << exposure << '\n';
 }
 
 void ProgramState::LoadFromFile(std::string filename) {
@@ -151,9 +160,18 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> snowPosition.y
            >> snowPosition.z
            >> mountainScale
+           >> mountainScale2
+           >> mountainScale3
            >> mountainPosition.x
            >> mountainPosition.y
-           >> mountainPosition.z;
+           >> mountainPosition.z
+           >> mountainPosition2.x
+           >> mountainPosition2.y
+           >> mountainPosition2.z
+           >> mountainPosition3.x
+           >> mountainPosition3.y
+           >> mountainPosition3.z
+           >> exposure;
     }
 }
 
@@ -228,9 +246,11 @@ int main() {
 
     // build and compile shaders
     // -------------------------
-    Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
+    Shader modelShader("resources/shaders/modelLightingShader.vs", "resources/shaders/modelLightingShader.fs");
     Shader antiAliasingShader("resources/shaders/antial.vs","resources/shaders/antial.fs");
     Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
+    Shader blurShader("resources/shaders/blur.vs", "resources/shaders/blur.fs");
+
 
     // load models
     // -----------
@@ -246,9 +266,15 @@ int main() {
     snowModel.SetShaderTextureNamePrefix("material.");
 
 
+
     //load mt model
     Model modelMountain("resources/objects/great_mountain/untitled.obj");
     modelMountain.SetShaderTextureNamePrefix("material.");
+    Model modelMountain2("resources/objects/great_mountain/untitled.obj");
+    modelMountain2.SetShaderTextureNamePrefix("material.");
+    Model modelMountain3("resources/objects/great_mountain/untitled.obj");
+    modelMountain3.SetShaderTextureNamePrefix("material.");
+
 
 
     //load bell model
@@ -360,8 +386,8 @@ int main() {
     glBindVertexArray(0);
 
     unsigned int planeTexture = loadTexture("resources/textures/Snow1Albedo.png");
-    ourShader.use();
-    ourShader.setInt("material.texture_diffuse1", 0);
+    modelShader.use();
+    modelShader.setInt("material.texture_diffuse1", 0);
 
 
 
@@ -458,7 +484,52 @@ int main() {
 
 
 
+    //hdr and bloom
+    unsigned int hdrFBO;
+    glGenFramebuffers(1, &hdrFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+    unsigned int colorBuffers[2];
+    glGenTextures(2, colorBuffers);
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
+    }
+    // renderbuffer
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
+    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+    glDrawBuffers(2, attachments);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    unsigned int pingpongFBO[2];
+    unsigned int pingpongColorBuffers[2];
+    glGenFramebuffers(2, pingpongFBO);
+    glGenTextures(2, pingpongColorBuffers);
+    for (unsigned int i = 0; i < 2; ++i) {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, pingpongColorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorBuffers[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //MSAA
     unsigned int msFBO;
@@ -487,34 +558,15 @@ int main() {
 
 
 
-    //hdr
-    unsigned int hdrFBO;
-    glGenFramebuffers(1, &hdrFBO);
-    unsigned int colorBuffer;
-    glGenTextures(1, &colorBuffer);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // renderbuffer
-    unsigned int rboDepth;
-    glGenRenderbuffers(1, &rboDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "ERROR::FRAMEBUFFER!" << std::endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
     antiAliasingShader.use();
     antiAliasingShader.setInt("screenTex", 0);
 
     hdrShader.use();
-    hdrShader.setInt("hdrBuffer", 0);
+    hdrShader.setInt("scene", 0);
+    hdrShader.setInt("bloomBlur", 1);
+
+    blurShader.use();
+    blurShader.setInt("image", 0);
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -579,53 +631,70 @@ int main() {
 
 
         // house rendering
-        ourShader.use();
+        modelShader.use();
 
         // directional light
-        ourShader.setVec3("dirLight.direction", dirLight.direction);
-        ourShader.setVec3("dirLight.ambient", dirLight.ambient);
-        ourShader.setVec3("dirLight.diffuse", dirLight.diffuse);
-        ourShader.setVec3("dirLight.specular", dirLight.specular);
+        modelShader.setVec3("dirLight.direction", dirLight.direction);
+        modelShader.setVec3("dirLight.ambient", dirLight.ambient);
+        modelShader.setVec3("dirLight.diffuse", dirLight.diffuse);
+        modelShader.setVec3("dirLight.specular", dirLight.specular);
 
         //point light
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
-        ourShader.setVec3("pointLight.position", pointLight.position);
-        ourShader.setVec3("pointLight.ambient", glm::vec3(0.65f, 0.25f, 0.0f));
-        ourShader.setVec3("pointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
-        ourShader.setVec3("pointLight.specular", glm::vec3(1.0f, 0.45f, 0.4f));
-        ourShader.setFloat("pointLight.constant", pointLight.constant);
-        ourShader.setFloat("pointLight.linear", pointLight.linear);
-        ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
-        ourShader.setVec3("viewPosition", programState->camera.Position);
-        ourShader.setFloat("material.shininess", 32.0f);
+        modelShader.setVec3("pointLight.position", pointLight.position);
+        modelShader.setVec3("pointLight.ambient", glm::vec3(0.65f, 0.25f, 0.0f));
+        modelShader.setVec3("pointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
+        modelShader.setVec3("pointLight.specular", glm::vec3(1.0f, 0.45f, 0.4f));
+        modelShader.setFloat("pointLight.constant", pointLight.constant);
+        modelShader.setFloat("pointLight.linear", pointLight.linear);
+        modelShader.setFloat("pointLight.quadratic", pointLight.quadratic);
+        modelShader.setVec3("viewPosition", programState->camera.Position);
+        modelShader.setFloat("material.shininess", 32.0f);
 
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
 
         //transforming models
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, programState->housePosition);
         model = glm::scale(model, glm::vec3(programState->houseScale));
 
-        ourShader.setMat4("model", model);
-        houseModel.Draw(ourShader);
+        modelShader.setMat4("model", model);
+        houseModel.Draw(modelShader);
 
 
         //snow pile rendering
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->snowPosition);
         model = glm::scale(model, glm::vec3(programState->snowScale));
+        modelShader.setMat4("model", model);
+        snowModel.Draw(modelShader);
 
-        ourShader.setMat4("model", model);
-        snowModel.Draw(ourShader);
 
 
+        //mountains
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition);
-        model = glm::scale(model, glm::vec3(0.05, 0.05, 0.05));
+        model = glm::scale(model, glm::vec3(0.04, 0.04, 0.04));
 
-        ourShader.setMat4("model", model);
-        modelMountain.Draw(ourShader);
+        modelShader.setMat4("model", model);
+        modelMountain.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, programState->mountainPosition2);
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.03, 0.03, 0.03));
+
+        modelShader.setMat4("model", model);
+        modelMountain2.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, programState->mountainPosition3);
+        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.03, 0.03, 0.03));
+
+        modelShader.setMat4("model", model);
+        modelMountain3.Draw(modelShader);
 
 
         //plane rendering
@@ -633,12 +702,12 @@ int main() {
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
         model = glm::translate(model, glm::vec3(4.0f, 0.505f, 0.0f));
-        ourShader.setMat4("model", model);
+        modelShader.setMat4("model", model);
         glBindVertexArray(planeVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, planeTexture);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glEnable(GL_CULL_FACE);
+
 
 
 
@@ -648,7 +717,7 @@ int main() {
         reflectShader.setMat4("projection", projection);
         reflectShader.setMat4("view", view);
 
-        ourShader.setVec3("cameraPos", programState->camera.Position);
+        modelShader.setVec3("cameraPos", programState->camera.Position);
 
         model = glm::mat4(1.0f);
 
@@ -733,6 +802,9 @@ int main() {
         renderQuad();
 
 
+        glEnable(GL_CULL_FACE);
+
+
 
 
         //transparent objects render last
@@ -790,23 +862,43 @@ int main() {
 
 
 
+
         //POST PROCESSING
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        bool horizontal = true, first_iteration = true;
+        unsigned int amount = 10;
+        blurShader.use();
+        for (unsigned int i = 0; i < amount; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+            blurShader.setInt("horizontal", horizontal);
+            glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorBuffers[!horizontal]);
+            glBindVertexArray(quadVAO);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glBindVertexArray(0);
+            horizontal = !horizontal;
+            if (first_iteration)
+                first_iteration = false;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
         glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
         hdrShader.use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, colorBuffer);
-        hdrShader.setInt("hdr", hdr);
-        hdrShader.setFloat("exposure", exposure);
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, pingpongColorBuffers[!horizontal]);
+        hdrShader.setBool("hdr", hdr);
+        hdrShader.setBool("bloom", bloom);
+        hdrShader.setFloat("exposure", programState->exposure);
 
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glBindVertexArray(0);
 
-
+   
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         antiAliasingShader.use();
@@ -874,26 +966,36 @@ void processInput(GLFWwindow *window) {
             heightScale = 1.0f;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !hdrKeyPressed)
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !bloomKeyPressed)
+    {
+        bloom = !bloom;
+        bloomKeyPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
+    {
+        bloomKeyPressed = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && !hdrKeyPressed)
     {
         hdr = !hdr;
         hdrKeyPressed = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE)
     {
         hdrKeyPressed = false;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
     {
-        if (exposure > 0.0f)
-            exposure -= 0.001f;
+        if (programState->exposure > 0.0f)
+            programState->exposure -= 0.001f;
         else
-            exposure = 0.0f;
+            programState->exposure = 0.0f;
     }
-    else if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+    else if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
     {
-        exposure += 0.001f;
+        programState->exposure += 0.001f;
     }
 }
 
@@ -939,18 +1041,22 @@ void DrawImGui(ProgramState *programState) {
     {
         ImGui::Begin("Hello!");
         //ImGui::Text("Hello text");
-        ImGui::SliderFloat("Exposure", &exposure, 0.0, 2.0);
+        ImGui::SliderFloat("Exposure", &programState->exposure, 0.0, 2.0);
         //ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
         ImGui::DragFloat3("House position", (float*)&programState->housePosition);
         ImGui::DragFloat("House scale", &programState->houseScale, 0.05, 0.1, 4.0);
         ImGui::DragFloat3("Snow position", (float*)&programState->snowPosition);
         ImGui::DragFloat("Snow scale", &programState->snowScale, 0.05, 0.1, 4.0);
         ImGui::DragFloat3("Mountain position", (float*)&programState->mountainPosition);
+        ImGui::DragFloat3("Mountain position - 2", (float*)&programState->mountainPosition2);
+        ImGui::DragFloat3("Mountain position - 3", (float*)&programState->mountainPosition3);
         ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.05, 0.1, 4.0);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.05, 0.1, 4.0);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.05, 0.1, 4.0);
 
-        ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
+        /*ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
-        ImGui::DragFloat("pointLight.quadratic", &programState->pointLight.quadratic, 0.05, 0.0, 1.0);
+        ImGui::DragFloat("pointLight.quadratic", &programState->pointLight.quadratic, 0.05, 0.0, 1.0);*/
         ImGui::End();
     }
 
@@ -1153,3 +1259,4 @@ void renderQuad() {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
+

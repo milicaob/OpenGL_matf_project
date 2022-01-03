@@ -10,11 +10,16 @@
 
 `E`  - increase heightScale for parallax mapping
 
-`SPACE` - off/on hdr
+`J` - lower exposure
 
-`H` - lower exposure
+`K` - higher exposure
 
-`J` - higher exposure
+`H` - off/on HDR 
+
+`B` - off/on bloom
+
+
+
 
 <br>
 
