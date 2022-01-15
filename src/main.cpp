@@ -67,6 +67,21 @@ struct PointLight {
     float linear;
     float quadratic;
 };
+struct SpotLight {
+    glm::vec3 position;
+    glm::vec3 direction;
+    float cutOff;
+    float outerCutOff;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
 
 
 struct DirLight {
@@ -82,6 +97,9 @@ struct ProgramState {
     Camera camera;
     bool CameraMouseMovementUpdateEnabled = true;
     glm::vec3 housePosition = glm::vec3(0.0f);
+    glm::vec3 lampPosition = glm::vec3(0.0f);
+    glm::vec3 lampLightPosition = glm::vec3(0.0f);
+    float lampScale = 1.0f;
     float houseScale = 1.0f;
     float snowScale = 1.0f;
     glm::vec3 snowPosition = glm::vec3(0.0f);
@@ -92,8 +110,12 @@ struct ProgramState {
     glm::vec3 mountainPosition2 = glm::vec3(0.0f);
     glm::vec3 mountainPosition3 = glm::vec3(0.0f);
     float exposure = 1.0f;
+    glm::vec3 spotPosition = glm::vec3(0.0f);
+
 
     PointLight pointLight;
+    SpotLight spotLight;
+    PointLight lampPointLight;
     DirLight dirLight;
     ProgramState()
             : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
@@ -135,7 +157,17 @@ void ProgramState::SaveToFile(std::string filename) {
         << mountainPosition3.x << '\n'
         << mountainPosition3.y << '\n'
         << mountainPosition3.z << '\n'
-        << exposure << '\n';
+        << exposure << '\n'
+        << lampPosition.x << '\n'
+        << lampPosition.y << '\n'
+        << lampPosition.z << '\n'
+        << lampScale << '\n'
+        << lampLightPosition.x << '\n'
+        << lampLightPosition.y << '\n'
+        << lampLightPosition.z << '\n'
+        << spotPosition.x << '\n'
+        << spotPosition.y << '\n'
+        << spotPosition.z << '\n';
 }
 
 void ProgramState::LoadFromFile(std::string filename) {
@@ -171,7 +203,17 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> mountainPosition3.x
            >> mountainPosition3.y
            >> mountainPosition3.z
-           >> exposure;
+           >> exposure
+           >> lampPosition.x
+           >> lampPosition.y
+           >> lampPosition.z
+           >> lampScale
+           >> lampLightPosition.x
+           >> lampLightPosition.y
+           >> lampLightPosition.z
+           >> spotPosition.x
+           >> spotPosition.y
+           >> spotPosition.z;
     }
 }
 
@@ -274,6 +316,8 @@ int main() {
     modelMountain2.SetShaderTextureNamePrefix("material.");
     Model modelMountain3("resources/objects/great_mountain/untitled.obj");
     modelMountain3.SetShaderTextureNamePrefix("material.");
+    Model modelLamp("resources/objects/lamp/Lamp Old Street.obj");
+    modelLamp.SetShaderTextureNamePrefix("material.");
 
 
 
@@ -359,7 +403,7 @@ int main() {
 
 
 
-    //
+    //plane
     float planeVertices[] = {
             // positions            // normals         // texcoords
             10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
@@ -412,6 +456,28 @@ int main() {
     pointLight.constant = 1.0f;
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
+
+    //spotlight lamp
+    SpotLight& spotLight = programState->spotLight;
+    spotLight.position = glm::vec3(4.0f, 4.0, 0.0);
+    spotLight.ambient = glm::vec3(0.1, 0.1, 0.1);
+    spotLight.diffuse = glm::vec3(0.9f, 0.25f, 0.1f);
+    spotLight.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    spotLight.constant = 1.0f;
+    spotLight.linear = 0.09f;
+    spotLight.quadratic = 0.032f;
+    spotLight.cutOff = glm::cos(glm::radians(20.0f));
+    spotLight.outerCutOff = glm::cos(glm::radians(35.0f));
+
+    //lamp
+    PointLight& lampPointLight = programState->lampPointLight;
+    lampPointLight.position = glm::vec3(4.0f, 4.0, 0.0);
+    lampPointLight.ambient = glm::vec3(0.1, 0.1, 0.1);
+    lampPointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
+    lampPointLight.specular = glm::vec3(1.0, 1.0, 1.0);
+    lampPointLight.constant = 1.0f;
+    lampPointLight.linear = 0.09f;
+    lampPointLight.quadratic = 0.032f;
 
 
 
@@ -648,8 +714,31 @@ int main() {
         modelShader.setFloat("pointLight.constant", pointLight.constant);
         modelShader.setFloat("pointLight.linear", pointLight.linear);
         modelShader.setFloat("pointLight.quadratic", pointLight.quadratic);
+
+
+        //lamp point light
+        lampPointLight.position = glm::vec3(programState->lampLightPosition);
+        modelShader.setVec3("lampPointLight.position", lampPointLight.position);
+        modelShader.setVec3("lampPointLight.ambient", glm::vec3(0.65f, 0.25f, 0.0f));
+        modelShader.setVec3("lampPointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
+        modelShader.setVec3("lampPointLight.specular", glm::vec3(1.0f, 0.35, 0.35));
+        modelShader.setFloat("lampPointLight.constant", lampPointLight.constant);
+        modelShader.setFloat("lampPointLight.linear", lampPointLight.linear);
+        modelShader.setFloat("lampPointLight.quadratic", lampPointLight.quadratic);
         modelShader.setVec3("viewPosition", programState->camera.Position);
         modelShader.setFloat("material.shininess", 32.0f);
+
+        //spot light
+        modelShader.setVec3("spotLight.direction", glm::vec3(0.0f,-1.0f,0.0f));
+        modelShader.setVec3("spotLight.position", programState->spotPosition);
+        modelShader.setVec3("spotLight.ambient", spotLight.ambient);
+        modelShader.setVec3("spotLight.diffuse", spotLight.diffuse);
+        modelShader.setVec3("spotLight.specular", spotLight.specular);
+        modelShader.setFloat("spotLight.constant", spotLight.constant);
+        modelShader.setFloat("spotLight.linear", spotLight.linear);
+        modelShader.setFloat("spotLight.quadratic", spotLight.quadratic);
+        modelShader.setFloat("spotLight.cutOff", spotLight.cutOff);
+        modelShader.setFloat("spotLight.outerCutOff", spotLight.outerCutOff);
 
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
@@ -662,6 +751,13 @@ int main() {
         modelShader.setMat4("model", model);
         houseModel.Draw(modelShader);
 
+        //lamp
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, programState->lampPosition);
+        model = glm::scale(model, glm::vec3(programState->lampScale));
+
+        modelShader.setMat4("model", model);
+        modelLamp.Draw(modelShader);
 
         //snow pile rendering
         model = glm::mat4(1.0f);
@@ -709,7 +805,7 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
-
+        //std::cout << programState->lampScale;
 
         //bell rendering (reflective surface)
         reflectShader.use();
@@ -755,9 +851,9 @@ int main() {
         brickShader.setMat4("view", view);
         brickShader.setMat4("model", brickModel);
 
-       /* brickShader.setFloat("constant", pointLight.constant);
-        brickShader.setFloat("linear", pointLight.linear);
-        brickShader.setFloat("quadratic", pointLight.quadratic);*/
+        /* brickShader.setFloat("constant", pointLight.constant);
+         brickShader.setFloat("linear", pointLight.linear);
+         brickShader.setFloat("quadratic", pointLight.quadratic);*/
 
         brickShader.setFloat("heightScale", heightScale); // adjust with Q and E
 
@@ -780,13 +876,13 @@ int main() {
         brickModel = glm::scale(brickModel ,glm::vec3(.97f, 1.06f, 1.0f));
         brickShader.setMat4("model", brickModel);
 
-       /* brickShader.setVec3("diffuseL", pointLight.diffuse);
-        brickShader.setVec3("ambientL", pointLight.ambient);
+        /* brickShader.setVec3("diffuseL", pointLight.diffuse);
+         brickShader.setVec3("ambientL", pointLight.ambient);
 
-        brickShader.setFloat("factorD", 0.5f);
-        brickShader.setFloat("factorL", 0.7f);
+         brickShader.setFloat("factorD", 0.5f);
+         brickShader.setFloat("factorL", 0.7f);
 
-        renderQuad(); */
+         renderQuad(); */
 
         brickShader.setVec3("lightPos", glm::vec3( 1.3f, 2.85f, 3.65f));
         brickModel = glm::translate(brickModel, glm::vec3( 0.5f, 0.0f, -7.6f));
@@ -898,7 +994,7 @@ int main() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glBindVertexArray(0);
 
-   
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         antiAliasingShader.use();
@@ -1053,10 +1149,12 @@ void DrawImGui(ProgramState *programState) {
         ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.05, 0.1, 4.0);
         ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.05, 0.1, 4.0);
         ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.05, 0.1, 4.0);
+        ImGui::DragFloat3("Lamp position", (float*)&programState->lampPosition);
+        ImGui::DragFloat("Lamp scale", &programState->lampScale, 0.05, 0.1, 4.0);
+        ImGui::DragFloat3("Point light position", (float*)&programState->lampLightPosition);
+        ImGui::DragFloat3("Spot light position", (float*)&programState->spotPosition);
 
-        /*ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
-        ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
-        ImGui::DragFloat("pointLight.quadratic", &programState->pointLight.quadratic, 0.05, 0.0, 1.0);*/
+        
         ImGui::End();
     }
 
