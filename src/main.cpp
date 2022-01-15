@@ -637,6 +637,17 @@ int main() {
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    float h = 0;
+    typedef struct{
+        glm::vec3 trans;
+        glm::vec3 skal;
+        glm::vec3 rotatV;
+        float rotatU;
+    }triD;
+    vector<triD>winPos(3);
+    winPos.push_back({glm::vec3(-1.25f,1.75f,-3.25f), glm::vec3(0.39f,0.45f,0.4f), glm::vec3(1.0, 0, 0) ,43.0f});
+    winPos.push_back({glm::vec3(-1.25f,3.05f,2.35f), glm::vec3(0.39f,0.45f,0.4f), glm::vec3(1.0, 0, 0) ,43.0f});
+    winPos.push_back({glm::vec3(3.2753f,1.72f,1.35f), glm::vec3(0.39f,0.45f,0.4f), glm::vec3(0.0f, 0.0f, 1.0f) ,43.0f});
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
@@ -677,8 +688,15 @@ int main() {
 
         glm::mat4 viewCube = glm::mat4(glm::mat3(view));
 
+        //glm::mat4 skyModel = glm::mat4(1.0f);
+        //skyModel = glm::translate(skyModel, glm::vec3(0.0f, 0.0f, 0.0f));
+
         glm::mat4 skyModel = glm::mat4(1.0f);
-        skyModel = glm::translate(skyModel, glm::vec3(0.0f, 0.0f, 0.0f));
+        skyModel = glm::rotate(skyModel, glm::radians(0.01f * (h)), glm::vec3(1.0f, 1.0f, 0.0f));
+        h++;
+        if(h > 36000){
+            h = 0;
+        }
 
         skyShader.setMat4("view", viewCube);
         skyShader.setMat4("projection", projection);
@@ -807,13 +825,20 @@ int main() {
 
         //std::cout << programState->lampScale;
 
+
+
         //bell rendering (reflective surface)
         reflectShader.use();
 
         reflectShader.setMat4("projection", projection);
         reflectShader.setMat4("view", view);
 
-        modelShader.setVec3("cameraPos", programState->camera.Position);
+        glm::mat4 rot = glm::mat4(1.0f);
+        rot = glm::rotate(rot, glm::radians(0.01f * (h)), glm::vec3(1.0f, 1.0f, 1.0f));
+
+        reflectShader.setMat4("rot", rot);
+
+        reflectShader.setVec3("cameraPos", programState->camera.Position);
 
         model = glm::mat4(1.0f);
 
@@ -903,31 +928,15 @@ int main() {
 
 
 
-        //transparent objects render last
+        //transparent objects are rendered last
         //windows rendering
 
-        /*
-        //glm::vec3 positions1 = glm::vec3(-1.25f,1.75f,-3.25f);
-        //glm::vec3 positions2 = glm::vec3(0.03f,2.87f,13.91f));
-
-        vector<glm::vec3> positions;
-        positions.push_back(glm::vec3(-1.25f,1.75f,-3.25f));
-        positions.push_back(glm::vec3(0.03f,2.87f,13.91f));
-
-        std::sort(positions.begin(), positions.end(), [](glm::vec3 a, glm::vec3 b){
-                float d1 = glm::distance(a, programState->camera.Position);
-                float d2 = glm::distance(b, programState->camera.Position);
+        std::sort(winPos.begin(), winPos.end(), [](triD a, triD b){
+                float d1 = glm::distance(a.trans, programState->camera.Position);
+                float d2 = glm::distance(b.trans, programState->camera.Position);
                 return d1 > d2;
         });
 
-
-        //sorting transparent windows so that both may be visible through other
-        std::sort(windows.begin(), windows.end(),
-                  [cameraPosition = programState->camera.Position](const glm::vec3& a, const glm::vec3& b) {
-                      float d1 = glm::distance(a, cameraPosition);
-                      float d2 = glm::distance(b, cameraPosition);
-                      return d1 > d2;
-                  });*/
         //this goes before window implementation
         glDisable(GL_CULL_FACE);
         windowShader.use();
@@ -935,24 +944,32 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, windowTexture);
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.25f,1.75f,-3.25f));
-
-        model = glm::scale(model, glm::vec3(0.39f,0.45f,0.4f));
-        model = glm::rotate(model, glm::radians(43.0f), glm::vec3(1.0, 0, 0));
-
-        windowShader.setMat4("model", model);
         windowShader.setMat4("view", view);
         windowShader.setMat4("projection", projection);
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        for(int i = 0 ;i < winPos.size(); i++){
 
-        model = glm::rotate(model, glm::radians(-43.0f), glm::vec3(1.0, 0, 0));
+            model = glm::mat4(1.0f);
+
+            model = glm::translate(model, winPos[i].trans);
+            model = glm::scale(model, winPos[i].skal);
+            model = glm::rotate(model, glm::radians(winPos[i].rotatU), winPos[i].rotatV);
+
+            /*if(glm::vec3(3.0f,2.7f,1.0f) == winPos[i].trans){
+                model = glm::rotate(model, glm::radians(winPos[i].rotatU), glm::vec3(1.0f,0.0f,0.0f));
+            }*/
+
+            windowShader.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        }
+
+        /*model = glm::rotate(model, glm::radians(-43.0f), glm::vec3(1.0, 0, 0));
         model = glm::translate(model, glm::vec3(0.03f,2.87f,13.91f));
         model = glm::rotate(model, glm::radians(43.0f), glm::vec3(1.0, 0, 0));
-        windowShader.setMat4("model", model);
+        windowShader.setMat4("model", model);*/
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
         //this goes after window implementation
         glEnable(GL_CULL_FACE);
 
