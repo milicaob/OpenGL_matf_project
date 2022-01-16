@@ -29,8 +29,8 @@ void renderQuad();
 
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 900;
 bool hdr = true;
 bool hdrKeyPressed = false;
 
@@ -294,6 +294,14 @@ int main() {
     Shader blurShader("resources/shaders/blur.vs", "resources/shaders/blur.fs");
 
 
+    Shader rugShader("resources/shaders/rugShader.vs", "resources/shaders/rugShader.fs");
+    unsigned int rugTextureDiff = loadTexture("resources/textures/rug.png");
+    unsigned int rugTextureNormal = loadTexture("resources/textures/rugNormal.png");
+    rugShader.use();
+    rugShader.setInt("diffuseMap", 0);
+    rugShader.setInt("normalMap", 1);
+
+
     // load models
     // -----------
 
@@ -307,6 +315,15 @@ int main() {
     Model snowModel("resources/objects/snow model/terrain.obj");
     snowModel.SetShaderTextureNamePrefix("material.");
 
+    //load furniture models(bed,table,bookcase...)
+    Model bedModel("resources/objects/bed/untitled.obj");
+    bedModel.SetShaderTextureNamePrefix("material.");
+    Model tableModel("resources/objects/table/Table_Chair.obj");
+    tableModel.SetShaderTextureNamePrefix("material.");
+    //Model shelfModel("resources/objects/shelf/BOOKS OBJ.obj");
+    //shelfModel.SetShaderTextureNamePrefix("material.");
+    //Model rugModel("resources/objects/rug/Fine Persian Esfahan Carpet.obj");
+    //rugModel.SetShaderTextureNamePrefix("material.");
 
 
     //load mt model
@@ -726,8 +743,9 @@ int main() {
         //point light
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         modelShader.setVec3("pointLight.position", pointLight.position);
-        modelShader.setVec3("pointLight.ambient", glm::vec3(0.65f, 0.25f, 0.0f));
+        modelShader.setVec3("pointLight.ambient", glm::vec3(0.85f, 0.25f, 0.0f));
         modelShader.setVec3("pointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
+        //modelShader.setVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         modelShader.setVec3("pointLight.specular", glm::vec3(1.0f, 0.45f, 0.4f));
         modelShader.setFloat("pointLight.constant", pointLight.constant);
         modelShader.setFloat("pointLight.linear", pointLight.linear);
@@ -737,7 +755,7 @@ int main() {
         //lamp point light
         lampPointLight.position = glm::vec3(programState->lampLightPosition);
         modelShader.setVec3("lampPointLight.position", lampPointLight.position);
-        modelShader.setVec3("lampPointLight.ambient", glm::vec3(0.65f, 0.25f, 0.0f));
+        modelShader.setVec3("lampPointLight.ambient", glm::vec3(0.85f, 0.25f, 0.0f));
         modelShader.setVec3("lampPointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
         modelShader.setVec3("lampPointLight.specular", glm::vec3(1.0f, 0.35, 0.35));
         modelShader.setFloat("lampPointLight.constant", lampPointLight.constant);
@@ -750,7 +768,8 @@ int main() {
         modelShader.setVec3("spotLight.direction", glm::vec3(0.0f,-1.0f,0.0f));
         modelShader.setVec3("spotLight.position", programState->spotPosition);
         modelShader.setVec3("spotLight.ambient", spotLight.ambient);
-        modelShader.setVec3("spotLight.diffuse", spotLight.diffuse);
+        modelShader.setVec3("spotLight.diffuse", glm::vec3(0.85f, 0.25f, 0.0f));
+        //modelShader.setVec3("spotLight.diffuse", spotLight.diffuse);
         modelShader.setVec3("spotLight.specular", spotLight.specular);
         modelShader.setFloat("spotLight.constant", spotLight.constant);
         modelShader.setFloat("spotLight.linear", spotLight.linear);
@@ -827,6 +846,76 @@ int main() {
 
 
 
+
+        //bed rendering
+        modelShader.use();
+        modelShader.setVec3("pointLight.position", programState->pointLight.position);
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-3.0f, 2.0f, 2.1f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.12f, 0.12f, 0.12f));
+        modelShader.setFloat("material.shininess", 5);
+        modelShader.setMat4("model", model);
+        bedModel.Draw(modelShader);
+
+
+
+        //table rendering
+        modelShader.use();
+        modelShader.setVec3("pointLight.position", programState->pointLight.position);
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.5f, 2.45f, 2.0f));
+        model = glm::rotate(model, glm::radians(-9.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.014f));
+        modelShader.setFloat("material.shininess", 48);
+        modelShader.setMat4("model", model);
+        tableModel.Draw(modelShader);
+
+
+        /*
+        //shelf rendering
+        modelShader.use();
+        modelShader.setVec3("pointLight.position", programState->pointLight.position);
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.67f, 2.5f, 1.0f));
+        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+        //modelShader.setFloat("material.shininess", 48);
+        modelShader.setMat4("model", model);
+        shelfModel.Draw(modelShader);
+
+
+
+
+
+        //rug/carpet rendering
+        modelShader.use();
+        modelShader.setVec3("pointLight.position", programState->pointLight.position);
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.67f, 2.5f, 1.0f));
+        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+        //modelShader.setFloat("material.shininess", 48);
+        modelShader.setMat4("model", model);
+        rugModel.Draw(modelShader);
+        */
+
+
+
+
+
         //bell rendering (reflective surface)
         reflectShader.use();
 
@@ -858,7 +947,7 @@ int main() {
 
         //normal/parallax supported rendering
         brickShader.use();
-        //brickShader.setVec3("lightPos", pointLight.position);
+        //brickShader.setVec3("lightPos", programState->pointLight.position);
         brickShader.setVec3("lightPos", glm::vec3( 1.3f, 2.85f, -3.85f));
         brickShader.setVec3("viewPos", programState->camera.Position);
 
@@ -923,8 +1012,34 @@ int main() {
         renderQuad();
 
 
-        glEnable(GL_CULL_FACE);
 
+
+
+        //rug rendering with normal maps
+        rugShader.use();
+        //rugShader.setVec3("lightPos", programState->pointLight.position);
+        rugShader.setVec3("lightPos", glm::vec3( 1.5f, 0.84f, -1.65f));
+        rugShader.setVec3("viewPos", programState->camera.Position);
+
+        glm::mat4 rugModel = glm::mat4(1.0f);
+
+        rugModel = glm::rotate(rugModel, glm::radians(90.0f), glm::vec3( 1.0f, 0.0f, 0.0f));
+
+        rugModel = glm::translate(rugModel, glm::vec3( 0.5f, 0.44f, -1.65f));
+
+        rugShader.setMat4("projection", projection);
+        rugShader.setMat4("view", view);
+        rugShader.setMat4("model", rugModel);
+
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rugTextureDiff);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, rugTextureNormal);
+
+        renderQuad();
+
+        glEnable(GL_CULL_FACE);
 
 
 
