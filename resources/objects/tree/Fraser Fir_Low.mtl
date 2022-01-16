@@ -1,0 +1,82 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 14.03.2021 16:58:10
+
+newmtl FraserFirNeedles_1_Mat
+	Ns 27.114901
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.588000 0.588000 0.588000
+	Ks 0.309631 0.309631 0.309631
+	Ke 0.000000 0.000000 0.000000
+	map_Ka FraserFirNeedles_1.jpg
+	map_Kd FraserFirNeedles_1.jpg
+	map_d FraserFirNeedles_1_Opacity.jpg
+	map_bump -bm 0.300000 Normal_Bump_Normal Bump.tga
+
+newmtl Cap_04_Mat
+	Ns 25.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.588000 0.588000 0.588000
+	Ks 0.292500 0.292500 0.292500
+	Ke 0.000000 0.000000 0.000000
+	map_Ka Cap_04.jpg
+	map_Kd Cap_04.jpg
+	map_d Cap_04_Opacity.jpg
+	map_bump -bm 0.300000 Normal_Bump_Normal Bump.tga
+
+newmtl FraserFirNeedles_2_Mat
+	Ns 27.114901
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.588000 0.588000 0.588000
+	Ks 0.309631 0.309631 0.309631
+	Ke 0.000000 0.000000 0.000000
+	map_Ka FraserFirNeedles_2.jpg
+	map_Kd FraserFirNeedles_2.jpg
+	map_d FraserFirNeedles_2_Opacity.jpg
+	map_bump -bm 0.300000 Normal_Bump_Normal Bump.tga
+
+newmtl Branches_03_Mat
+	Ns 25.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.588000 0.588000 0.588000
+	Ks 0.292500 0.292500 0.292500
+	Ke 0.000000 0.000000 0.000000
+	map_Ka Branches_03.jpg
+	map_Kd Branches_03.jpg
+	map_d Branches_03_Opacity.jpg
+	map_bump -bm 0.300000 Normal_Bump_Normal Bump.tga
+
+newmtl FraserFirBark_Mat
+	Ns 25.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.588000 0.588000 0.588000
+	Ks 0.292500 0.292500 0.292500
+	Ke 0.000000 0.000000 0.000000
+	map_Ka FraserFirBark.jpg
+	map_Kd FraserFirBark.jpg
+	map_d FraserFirBark_Opacity.jpg
+	map_bump -bm 0.300000 Normal_Bump_Normal Bump.tga

@@ -1,4 +1,4 @@
-# Install script for directory: /home/milan/OpenGL_matf_project/libs/glad
+# Install script for directory: /home/milica/OpenGL_matf_project/libs/glad
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -96,13 +96,8 @@ struct ProgramState {
     bool ImGuiEnabled = false;
     Camera camera;
     bool CameraMouseMovementUpdateEnabled = true;
-    glm::vec3 housePosition = glm::vec3(0.0f);
-    glm::vec3 lampPosition = glm::vec3(0.0f);
     glm::vec3 lampLightPosition = glm::vec3(0.0f);
-    float lampScale = 1.0f;
-    float houseScale = 1.0f;
-    float snowScale = 1.0f;
-    glm::vec3 snowPosition = glm::vec3(0.0f);
+
     float mountainScale = 1.0f;
     float mountainScale2 = 1.0f;
     float mountainScale3 = 1.0f;
@@ -110,7 +105,7 @@ struct ProgramState {
     glm::vec3 mountainPosition2 = glm::vec3(0.0f);
     glm::vec3 mountainPosition3 = glm::vec3(0.0f);
     float exposure = 1.0f;
-    glm::vec3 spotPosition = glm::vec3(0.0f);
+    glm::vec3 modelPosition = glm::vec3(0.0f);
 
 
     PointLight pointLight;
@@ -137,14 +132,6 @@ void ProgramState::SaveToFile(std::string filename) {
         << camera.Front.x << '\n'
         << camera.Front.y << '\n'
         << camera.Front.z << '\n'
-        << houseScale << '\n'
-        << housePosition.x << '\n'
-        << housePosition.y << '\n'
-        << housePosition.z << '\n'
-        << snowScale << '\n'
-        << snowPosition.x << '\n'
-        << snowPosition.y << '\n'
-        << snowPosition.z << '\n'
         << mountainScale << '\n'
         << mountainScale2 << '\n'
         << mountainScale3 << '\n'
@@ -158,16 +145,12 @@ void ProgramState::SaveToFile(std::string filename) {
         << mountainPosition3.y << '\n'
         << mountainPosition3.z << '\n'
         << exposure << '\n'
-        << lampPosition.x << '\n'
-        << lampPosition.y << '\n'
-        << lampPosition.z << '\n'
-        << lampScale << '\n'
         << lampLightPosition.x << '\n'
         << lampLightPosition.y << '\n'
         << lampLightPosition.z << '\n'
-        << spotPosition.x << '\n'
-        << spotPosition.y << '\n'
-        << spotPosition.z << '\n';
+        << modelPosition.x << '\n'
+        << modelPosition.y << '\n'
+        << modelPosition.z << '\n';
 }
 
 void ProgramState::LoadFromFile(std::string filename) {
@@ -183,14 +166,6 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> camera.Front.x
            >> camera.Front.y
            >> camera.Front.z
-           >> houseScale
-           >> housePosition.x
-           >> housePosition.y
-           >> housePosition.z
-           >> snowScale
-           >> snowPosition.x
-           >> snowPosition.y
-           >> snowPosition.z
            >> mountainScale
            >> mountainScale2
            >> mountainScale3
@@ -204,16 +179,12 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> mountainPosition3.y
            >> mountainPosition3.z
            >> exposure
-           >> lampPosition.x
-           >> lampPosition.y
-           >> lampPosition.z
-           >> lampScale
            >> lampLightPosition.x
            >> lampLightPosition.y
            >> lampLightPosition.z
-           >> spotPosition.x
-           >> spotPosition.y
-           >> spotPosition.z;
+           >> modelPosition.x
+           >> modelPosition.y
+           >> modelPosition.z;
     }
 }
 
@@ -312,7 +283,11 @@ int main() {
 
 
     //load snow model
-    Model snowModel("resources/objects/snow model/terrain.obj");
+    Model snowModel("resources/objects/snow model/terrain5.obj");
+    snowModel.SetShaderTextureNamePrefix("material.");
+    Model snowModel2("resources/objects/snow model/terrain3.obj");
+    snowModel.SetShaderTextureNamePrefix("material.");
+    Model snowModel3("resources/objects/snow model/terrain4.obj");
     snowModel.SetShaderTextureNamePrefix("material.");
 
     //load furniture models(bed,table,bookcase...)
@@ -320,6 +295,32 @@ int main() {
     bedModel.SetShaderTextureNamePrefix("material.");
     Model tableModel("resources/objects/table/Table_Chair.obj");
     tableModel.SetShaderTextureNamePrefix("material.");
+
+    //load tree models
+    Model modelTree("resources/objects/tree/3d-model.obj");
+    modelTree.SetShaderTextureNamePrefix("material.");
+    Model modelTree2("resources/objects/tree/3d-model.obj");
+    modelTree2.SetShaderTextureNamePrefix("material.");
+    Model modelTree3("resources/objects/tree/3d-model.obj");
+    modelTree3.SetShaderTextureNamePrefix("material.");
+
+    //load fence
+    Model modelFence("resources/objects/fence/untitled.obj");
+    modelFence.SetShaderTextureNamePrefix("material.");
+    Model modelFence2("resources/objects/fence/untitled.obj");
+    modelFence2.SetShaderTextureNamePrefix("material.");
+    Model modelFence3("resources/objects/fence/untitled.obj");
+    modelFence3.SetShaderTextureNamePrefix("material.");
+    Model modelFence4("resources/objects/fence/untitled.obj");
+    modelFence4.SetShaderTextureNamePrefix("material.");
+
+    //load rock
+    Model modelRock("resources/objects/rock/untitled.obj");
+    modelFence4.SetShaderTextureNamePrefix("material.");
+
+    //load sled
+    Model modelSled("resources/objects/sled/Sled01Old.obj");
+    modelSled.SetShaderTextureNamePrefix("material.");
     //Model shelfModel("resources/objects/shelf/BOOKS OBJ.obj");
     //shelfModel.SetShaderTextureNamePrefix("material.");
     //Model rugModel("resources/objects/rug/Fine Persian Esfahan Carpet.obj");
@@ -766,10 +767,9 @@ int main() {
 
         //spot light
         modelShader.setVec3("spotLight.direction", glm::vec3(0.0f,-1.0f,0.0f));
-        modelShader.setVec3("spotLight.position", programState->spotPosition);
+        modelShader.setVec3("spotLight.position", glm::vec3(10.25, 7.25,13.25));
         modelShader.setVec3("spotLight.ambient", spotLight.ambient);
         modelShader.setVec3("spotLight.diffuse", glm::vec3(0.85f, 0.25f, 0.0f));
-        //modelShader.setVec3("spotLight.diffuse", spotLight.diffuse);
         modelShader.setVec3("spotLight.specular", spotLight.specular);
         modelShader.setFloat("spotLight.constant", spotLight.constant);
         modelShader.setFloat("spotLight.linear", spotLight.linear);
@@ -782,33 +782,46 @@ int main() {
 
         //transforming models
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, programState->housePosition);
-        model = glm::scale(model, glm::vec3(programState->houseScale));
+        model = glm::translate(model, glm::vec3(0.0f));
+        model = glm::scale(model, glm::vec3(0.8f));
 
         modelShader.setMat4("model", model);
         houseModel.Draw(modelShader);
 
         //lamp
         model = glm::mat4(1.0f);
-        model = glm::translate(model, programState->lampPosition);
-        model = glm::scale(model, glm::vec3(programState->lampScale));
+        model = glm::translate(model, glm::vec3(10.f, -1.0f, 12.0f));
+        model = glm::scale(model, glm::vec3(0.3f));
+        model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         modelShader.setMat4("model", model);
         modelLamp.Draw(modelShader);
 
         //snow pile rendering
         model = glm::mat4(1.0f);
-        model = glm::translate(model, programState->snowPosition);
-        model = glm::scale(model, glm::vec3(programState->snowScale));
+        model = glm::translate(model, glm::vec3(4.f, 0.0f, -20.0f));
+        model = glm::scale(model, glm::vec3(4.0f));
         modelShader.setMat4("model", model);
         snowModel.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(4.f, 0.0f, -20.0f));
+        model = glm::scale(model, glm::vec3(4.0f));
+        modelShader.setMat4("model", model);
+        snowModel2.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(4.f, 0.0f, -20.0f));
+        model = glm::scale(model, glm::vec3(4.0f));
+        modelShader.setMat4("model", model);
+        snowModel3.Draw(modelShader);
 
 
 
         //mountains
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition);
-        model = glm::scale(model, glm::vec3(0.04, 0.04, 0.04));
+        model = glm::scale(model, glm::vec3(programState->mountainScale));
 
         modelShader.setMat4("model", model);
         modelMountain.Draw(modelShader);
@@ -816,7 +829,7 @@ int main() {
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition2);
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.03, 0.03, 0.03));
+        model = glm::scale(model, glm::vec3(programState->mountainScale2));
 
         modelShader.setMat4("model", model);
         modelMountain2.Draw(modelShader);
@@ -824,11 +837,77 @@ int main() {
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition3);
         //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.03, 0.03, 0.03));
+        model = glm::scale(model, glm::vec3(programState->mountainScale3));
 
         modelShader.setMat4("model", model);
         modelMountain3.Draw(modelShader);
 
+        //trees
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-10.0f, 0.0f, 15.0f));
+        model = glm::scale(model, glm::vec3(0.09));
+        modelShader.setMat4("model",model);
+        modelTree.Draw(modelShader);
+
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 25.0f));
+        model = glm::scale(model, glm::vec3(0.09));
+        modelShader.setMat4("model",model);
+        modelTree2.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(8.0f, 0.0f, -9.0f));
+        model = glm::scale(model, glm::vec3(0.09));
+        modelShader.setMat4("model",model);
+        modelTree2.Draw(modelShader);
+
+
+
+        //rock
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-14.0f,1.0f,-10.0f));
+        model = glm::scale(model, glm::vec3(0.5f));
+        modelShader.setMat4("model",model);
+        modelRock.Draw(modelShader);
+
+
+        //sled
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(3.0f, 0.2f, 11.0f));
+        model = glm::scale(model, glm::vec3(5.0f));
+        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        modelShader.setMat4("model",model);
+        modelSled.Draw(modelShader);
+
+        //fence
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-6.0f,0.0f,23.0f));
+        model = glm::scale(model, glm::vec3(4.0));
+        modelShader.setMat4("model",model);
+        modelFence2.Draw(modelShader);
+
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-6.0f, 0.0f, -15.0f));
+        model = glm::scale(model, glm::vec3(4.0));
+        modelShader.setMat4("model",model);
+        modelFence.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-16.0f, 0.0f, -5.0f));
+        model = glm::scale(model, glm::vec3(4.0));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        modelShader.setMat4("model",model);
+        modelFence3.Draw(modelShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-16.0f, 0.0f, 13.0f));
+        model = glm::scale(model, glm::vec3(4.0));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        modelShader.setMat4("model",model);
+        modelFence3.Draw(modelShader);
 
         //plane rendering
         glDisable(GL_CULL_FACE);
@@ -1268,23 +1347,15 @@ void DrawImGui(ProgramState *programState) {
 
     {
         ImGui::Begin("Hello!");
-        //ImGui::Text("Hello text");
         ImGui::SliderFloat("Exposure", &programState->exposure, 0.0, 2.0);
-        //ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
-        ImGui::DragFloat3("House position", (float*)&programState->housePosition);
-        ImGui::DragFloat("House scale", &programState->houseScale, 0.05, 0.1, 4.0);
-        ImGui::DragFloat3("Snow position", (float*)&programState->snowPosition);
-        ImGui::DragFloat("Snow scale", &programState->snowScale, 0.05, 0.1, 4.0);
         ImGui::DragFloat3("Mountain position", (float*)&programState->mountainPosition);
         ImGui::DragFloat3("Mountain position - 2", (float*)&programState->mountainPosition2);
         ImGui::DragFloat3("Mountain position - 3", (float*)&programState->mountainPosition3);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.05, 0.1, 4.0);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.05, 0.1, 4.0);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.05, 0.1, 4.0);
-        ImGui::DragFloat3("Lamp position", (float*)&programState->lampPosition);
-        ImGui::DragFloat("Lamp scale", &programState->lampScale, 0.05, 0.1, 4.0);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.005, 0.005, 0.5);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.005, 0.005, 0.5);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.005, 0.005, 0.5);
         ImGui::DragFloat3("Point light position", (float*)&programState->lampLightPosition);
-        ImGui::DragFloat3("Spot light position", (float*)&programState->spotPosition);
+        ImGui::DragFloat3("Model position", (float*)&programState->modelPosition);
 
         
         ImGui::End();

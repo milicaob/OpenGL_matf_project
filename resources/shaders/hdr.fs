@@ -11,7 +11,7 @@ uniform bool hdr;
 uniform float exposure;
 
 void main() {
-    const float gamma = 2.2f;
+    const float gamma = 1.4;
     vec3 hdrColor = texture(scene, TexCoords).rgb;
     vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
 
