@@ -42,6 +42,8 @@ Projekat iz Računarske Grafike.
 --------------------
 # Galerija
 
+Video - `https://drive.google.com/drive/folders/11l6OzAydZwVwiyT0pDjBbTeEcma48Y4F?usp=sharing` (video mora da se skine)
+
 ![image](./images/1.jpg)
 ![image](./images/2.jpg)
 ![image](./images/3.jpg)
@@ -64,6 +66,6 @@ Projekat iz Računarske Grafike.
 Skelet za projekat je `https://github.com/matf-racunarska-grafika/project_base.git `
 
 ------------------------
-#Radili
+# Radili
 * Milan Brčin, 247/19 (GitHub username: JohnMcCodeman5)
 * Milica Obradović, 83/19 (GitHub username: milicaob)
