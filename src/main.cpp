@@ -34,7 +34,7 @@ const unsigned int SCR_HEIGHT = 900;
 bool hdr = true;
 bool hdrKeyPressed = false;
 
-bool bloom = true;
+bool bloom = false;
 bool bloomKeyPressed = false;
 
 //grayscale effect
@@ -307,6 +307,11 @@ int main() {
     shackModel.SetShaderTextureNamePrefix("material.");
     Model lanternModel("resources/objects/lantern/untitled.obj");
     lanternModel.SetShaderTextureNamePrefix("material.");
+    Model snowManModel("/home/milan/RG Projekat/prototip2/resources/objects/snowman/untitled.obj");
+    snowManModel.SetShaderTextureNamePrefix("material.");
+
+
+
     Model mt1Model("resources/objects/mount2/untitled.obj");
     mt1Model.SetShaderTextureNamePrefix("material.");
     Model mt3Model("resources/objects/mount2/untitled.obj");
@@ -1061,6 +1066,22 @@ int main() {
 
 
 
+        //snowman :)
+        modelShader.use();
+
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+
+        model  = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(-7.0f, 0.7f, 10.3f));
+        model = glm::rotate(model, glm::radians(111.0f), glm::vec3(0.0f,1.0f,0.0f));
+        model = glm::scale(model, glm::vec3(0.7f,0.7f,0.7f));
+
+        modelShader.setMat4("model", model);
+        snowManModel.Draw(modelShader);
+
+
 
 
         //bell rendering (reflective surface)
@@ -1070,7 +1091,7 @@ int main() {
         reflectShader.setMat4("view", view);
 
         glm::mat4 rot = glm::mat4(1.0f);
-        rot = glm::rotate(rot, glm::radians(0.01f * (h)), glm::vec3(1.0f, 1.0f, 1.0f));
+        rot = glm::rotate(rot, glm::radians(0.01f * (h)), glm::vec3(0.3f, 1.0f, 1.0f));
 
         reflectShader.setMat4("rot", rot);
 
