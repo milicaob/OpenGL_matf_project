@@ -757,7 +757,7 @@ int main() {
         modelShader.setVec3("dirLight.specular", dirLight.specular);
 
         //point light
-        pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
+        pointLight.position = glm::vec3(0.0f, 2.4635f, 2.12f);
         modelShader.setVec3("pointLight.position", pointLight.position);
         modelShader.setVec3("pointLight.ambient", glm::vec3(0.85f, 0.25f, 0.0f));
         modelShader.setVec3("pointLight.diffuse", glm::vec3(0.65f, 0.25f, 0.1f));
@@ -936,8 +936,6 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, planeTexture);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-
-        //std::cout << programState->lampScale;
 
 
 
@@ -1418,17 +1416,6 @@ void DrawImGui(ProgramState *programState) {
     {
         ImGui::Begin("Hello!");
         ImGui::SliderFloat("Exposure", &programState->exposure, 0.0, 2.0);
-        ImGui::DragFloat3("Mountain position", (float*)&programState->mountainPosition);
-        ImGui::DragFloat3("Mountain position - 2", (float*)&programState->mountainPosition2);
-        ImGui::DragFloat3("Mountain position - 3", (float*)&programState->mountainPosition3);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.05, 0.1, 10.0);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.05, 0.1, 10.0);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.05, 0.1, 10.0);
-        ImGui::SliderFloat("First mountain angle", &programState->angleMountain1, 0.0, 360.0);
-        ImGui::SliderFloat("Second mountain angle", &programState->angleMountain2, 0.0, 360.0);
-        ImGui::SliderFloat("Third mountain angle", &programState->angleMountain3, 0.0, 360.0);
-        ImGui::DragFloat3("Point light position", (float*)&programState->lampLightPosition);
-        ImGui::DragFloat3("Model position", (float*)&programState->modelPosition);
 
         
         ImGui::End();

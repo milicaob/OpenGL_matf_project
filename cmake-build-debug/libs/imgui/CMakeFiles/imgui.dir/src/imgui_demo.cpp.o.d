@@ -1,8 +1,8 @@
 libs/imgui/CMakeFiles/imgui.dir/src/imgui_demo.cpp.o: \
- /home/milan/OpenGL_matf_project/libs/imgui/src/imgui_demo.cpp \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/src/imgui_demo.cpp \
  /usr/include/stdc-predef.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imgui.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imconfig.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imgui.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imconfig.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h /usr/include/string.h \

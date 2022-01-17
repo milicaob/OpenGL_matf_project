@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = -I/home/milan/OpenGL_matf_project/libs/glad/include
+C_INCLUDES = -I/media/milica/00C5-4000/OpenGL_matf_project/libs/glad/include
 
 C_FLAGS = -g
 

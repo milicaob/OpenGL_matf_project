@@ -1,8 +1,8 @@
 libs/imgui/CMakeFiles/imgui.dir/src/imgui_draw.cpp.o: \
- /home/milan/OpenGL_matf_project/libs/imgui/src/imgui_draw.cpp \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/src/imgui_draw.cpp \
  /usr/include/stdc-predef.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imgui.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imconfig.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imgui.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imconfig.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h /usr/include/string.h \
@@ -18,7 +18,7 @@ libs/imgui/CMakeFiles/imgui.dir/src/imgui_draw.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
  /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
  /usr/include/assert.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imgui_internal.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imgui_internal.h \
  /usr/include/stdio.h /usr/include/x86_64-linux-gnu/bits/types.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
@@ -88,6 +88,6 @@ libs/imgui/CMakeFiles/imgui.dir/src/imgui_draw.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imstb_textedit.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imstb_rectpack.h \
- /home/milan/OpenGL_matf_project/libs/imgui/include/imstb_truetype.h
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imstb_textedit.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imstb_rectpack.h \
+ /media/milica/00C5-4000/OpenGL_matf_project/libs/imgui/include/imstb_truetype.h

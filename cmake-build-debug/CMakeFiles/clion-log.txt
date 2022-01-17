@@ -1,4 +1,4 @@
-/snap/clion/178/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/milan/OpenGL_matf_project
+/snap/clion/178/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /media/milica/00C5-4000/OpenGL_matf_project
 -- The C compiler identification is GNU 9.3.0
 -- The CXX compiler identification is GNU 9.3.0
 -- Detecting C compiler ABI info
@@ -16,4 +16,4 @@
 -- Found ASSIMP: /usr/lib/x86_64-linux-gnu/libassimp.so
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/milan/OpenGL_matf_project/cmake-build-debug
+-- Build files have been written to: /media/milica/00C5-4000/OpenGL_matf_project/cmake-build-debug
