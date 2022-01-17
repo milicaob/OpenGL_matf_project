@@ -106,7 +106,9 @@ struct ProgramState {
     glm::vec3 mountainPosition3 = glm::vec3(0.0f);
     float exposure = 1.0f;
     glm::vec3 modelPosition = glm::vec3(0.0f);
-
+    float angleMountain1 = 0.0f;
+    float angleMountain2 = 0.0f;
+    float angleMountain3 = 0.0f;
 
     PointLight pointLight;
     SpotLight spotLight;
@@ -150,7 +152,10 @@ void ProgramState::SaveToFile(std::string filename) {
         << lampLightPosition.z << '\n'
         << modelPosition.x << '\n'
         << modelPosition.y << '\n'
-        << modelPosition.z << '\n';
+        << modelPosition.z << '\n'
+        << angleMountain1 << '\n'
+        << angleMountain2 << '\n'
+        << angleMountain3 << '\n';
 }
 
 void ProgramState::LoadFromFile(std::string filename) {
@@ -184,7 +189,10 @@ void ProgramState::LoadFromFile(std::string filename) {
            >> lampLightPosition.z
            >> modelPosition.x
            >> modelPosition.y
-           >> modelPosition.z;
+           >> modelPosition.z
+           >> angleMountain1
+           >> angleMountain1
+           >> angleMountain1;
     }
 }
 
@@ -295,6 +303,16 @@ int main() {
     bedModel.SetShaderTextureNamePrefix("material.");
     Model tableModel("resources/objects/table/Table_Chair.obj");
     tableModel.SetShaderTextureNamePrefix("material.");
+    Model shackModel("resources/objects/shack/MedievalShackWood.obj");
+    shackModel.SetShaderTextureNamePrefix("material.");
+    Model lanternModel("resources/objects/lantern/untitled.obj");
+    lanternModel.SetShaderTextureNamePrefix("material.");
+    Model mt1Model("resources/objects/mount2/untitled.obj");
+    mt1Model.SetShaderTextureNamePrefix("material.");
+    Model mt3Model("resources/objects/mount2/untitled.obj");
+    mt1Model.SetShaderTextureNamePrefix("material.");
+    Model mt2Model("resources/objects/mount2/untitled.obj");
+    mt1Model.SetShaderTextureNamePrefix("material.");
 
     //load tree models
     Model modelTree("resources/objects/tree/3d-model.obj");
@@ -321,10 +339,7 @@ int main() {
     //load sled
     Model modelSled("resources/objects/sled/Sled01Old.obj");
     modelSled.SetShaderTextureNamePrefix("material.");
-    //Model shelfModel("resources/objects/shelf/BOOKS OBJ.obj");
-    //shelfModel.SetShaderTextureNamePrefix("material.");
-    //Model rugModel("resources/objects/rug/Fine Persian Esfahan Carpet.obj");
-    //rugModel.SetShaderTextureNamePrefix("material.");
+
 
 
     //load mt model
@@ -710,7 +725,7 @@ int main() {
         //skyModel = glm::translate(skyModel, glm::vec3(0.0f, 0.0f, 0.0f));
 
         glm::mat4 skyModel = glm::mat4(1.0f);
-        skyModel = glm::rotate(skyModel, glm::radians(0.01f * (h)), glm::vec3(1.0f, 1.0f, 0.0f));
+        skyModel = glm::rotate(skyModel, glm::radians(0.01f * (h)), glm::vec3(0.3f, 1.0f, 1.0f));
         h++;
         if(h > 36000){
             h = 0;
@@ -821,26 +836,27 @@ int main() {
         //mountains
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition);
+        model = glm::rotate(model, glm::radians(programState->angleMountain1), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(programState->mountainScale));
 
         modelShader.setMat4("model", model);
-        modelMountain.Draw(modelShader);
+        mt1Model.Draw(modelShader);
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition2);
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(programState->angleMountain2), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(programState->mountainScale2));
 
         modelShader.setMat4("model", model);
-        modelMountain2.Draw(modelShader);
+        mt2Model.Draw(modelShader);
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, programState->mountainPosition3);
-        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(programState->angleMountain3), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(programState->mountainScale3));
 
         modelShader.setMat4("model", model);
-        modelMountain3.Draw(modelShader);
+        mt3Model.Draw(modelShader);
 
         //trees
         model = glm::mat4(1.0f);
@@ -957,39 +973,93 @@ int main() {
         tableModel.Draw(modelShader);
 
 
-        /*
-        //shelf rendering
+        //shack rendering
         modelShader.use();
-        modelShader.setVec3("pointLight.position", programState->pointLight.position);
+        modelShader.setVec3("pointLight.position", glm::vec3(-12.5f, 2.2f, -12.0f));
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
 
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-2.67f, 2.5f, 1.0f));
-        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
-        //modelShader.setFloat("material.shininess", 48);
+
+        model = glm::translate(model, glm::vec3(-16.2f, 0.2f, -22.0f));
+        model = glm::rotate(model, glm::radians(47.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.023f, 0.023f, 0.023f));
+
         modelShader.setMat4("model", model);
-        shelfModel.Draw(modelShader);
+        shackModel.Draw(modelShader);
 
 
 
-
-
-        //rug/carpet rendering
+        //mt rendering
         modelShader.use();
-        modelShader.setVec3("pointLight.position", programState->pointLight.position);
+        modelShader.setVec3("pointLight.position", glm::vec3(-12.5f, 2.2f, 32.0f));
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
 
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-2.67f, 2.5f, 1.0f));
-        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        //model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
-        //modelShader.setFloat("material.shininess", 48);
+
+        model = glm::translate(model, glm::vec3(programState->modelPosition));
+        model = glm::rotate(model, glm::radians(47.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(10.0f, 7.0f, 10.0f));
+
         modelShader.setMat4("model", model);
-        rugModel.Draw(modelShader);
-        */
+        mt1Model.Draw(modelShader);
+
+
+
+        model = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(100.0f, -3.0f, -53.0f));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(23.0f, 10.0f, 10.0f));
+
+        modelShader.setMat4("model", model);
+        mt1Model.Draw(modelShader);
+
+
+        model = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(50.0f, -10.0f, -63.0f));
+        model = glm::rotate(model, glm::radians(-43.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(23.0f, 10.0f, 10.0f));
+
+        modelShader.setMat4("model", model);
+        mt1Model.Draw(modelShader);
+
+
+
+        model = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(70.0f, -5.0f, 20.0f));
+        model = glm::rotate(model, glm::radians(-43.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.2f, 5.0f, 10.0f));
+
+        modelShader.setMat4("model", model);
+        mt1Model.Draw(modelShader);
+
+
+
+
+
+        //lantern rendering
+        modelShader.use();
+
+        modelShader.setVec3("pointLight.position", glm::vec3(0.0f, 2.4635f, 2.12f));
+
+        modelShader.setVec3("pointLight.ambient", glm::vec3(1.0f, 0.45f, 0.0f));
+        modelShader.setVec3("pointLight.diffuse", glm::vec3(1.0f, 0.45f, 0.0f));
+
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 2.4635f, 2.12f));
+        model = glm::rotate(model, glm::radians(43.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.15f, 0.15f, 0.15f));
+        modelShader.setMat4("model", model);
+        lanternModel.Draw(modelShader);
+
 
 
 
@@ -1351,9 +1421,12 @@ void DrawImGui(ProgramState *programState) {
         ImGui::DragFloat3("Mountain position", (float*)&programState->mountainPosition);
         ImGui::DragFloat3("Mountain position - 2", (float*)&programState->mountainPosition2);
         ImGui::DragFloat3("Mountain position - 3", (float*)&programState->mountainPosition3);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.005, 0.005, 0.5);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.005, 0.005, 0.5);
-        ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.005, 0.005, 0.5);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale, 0.05, 0.1, 10.0);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale2, 0.05, 0.1, 10.0);
+        ImGui::DragFloat("Mountain scale", &programState->mountainScale3, 0.05, 0.1, 10.0);
+        ImGui::SliderFloat("First mountain angle", &programState->angleMountain1, 0.0, 360.0);
+        ImGui::SliderFloat("Second mountain angle", &programState->angleMountain2, 0.0, 360.0);
+        ImGui::SliderFloat("Third mountain angle", &programState->angleMountain3, 0.0, 360.0);
         ImGui::DragFloat3("Point light position", (float*)&programState->lampLightPosition);
         ImGui::DragFloat3("Model position", (float*)&programState->modelPosition);
 
